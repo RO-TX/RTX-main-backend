@@ -70,3 +70,8 @@ export const env = parsed.data;
 
 export const isProd = env.NODE_ENV === 'production';
 export const isDev = env.NODE_ENV === 'development';
+
+/** Allowed CORS origins as an array. */
+export const corsOrigins = env.CORS_ORIGINS.split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);

@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import { isDev } from './config/env';
+import { isDev, corsOrigins } from './config/env';
 import { apiLimiter } from './middleware/rateLimit';
 import { notFoundHandler, errorHandler } from './middleware/error';
 import apiRoutes from './routes';
@@ -17,10 +17,10 @@ export function createApp(): Application {
   app.use(helmet());
   app.use(
     cors({
-      // Allow all origins. Reflecting the request origin (instead of a literal
-      // "*") is required because credentials:true forbids a wildcard value.
       origin(origin, callback) {
-        callback(null, origin ?? true);
+        // Allow non-browser clients (curl, server-to-server) with no Origin header.
+        if (!origin || corsOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
       },
       credentials: true,
     }),
