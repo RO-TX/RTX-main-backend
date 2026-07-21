@@ -2,8 +2,12 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# --include=dev overrides any NODE_ENV=production injected by the host
+# platform (e.g. Coolify passes configured env vars as build args to every
+# stage) — without it, npm silently skips devDependencies and `tsc` is
+# missing when the build step below runs.
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY tsconfig.json ./
 COPY src ./src
