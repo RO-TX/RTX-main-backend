@@ -18,4 +18,4 @@ npm-debug.log*
 coverage/
 .cache/
 tmp/
-uploads/
+/uploads/
