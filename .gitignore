@@ -19,3 +19,6 @@ coverage/
 .cache/
 tmp/
 /uploads/
+
+# DB snapshots from `npm run reset-data` — contain PII, never commit
+backups/

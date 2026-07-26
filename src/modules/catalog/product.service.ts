@@ -88,6 +88,8 @@ export interface CreateProductInput {
   category: string;
   isTopSeller?: boolean;
   productType?: ProductType;
+  colors?: string[];
+  sizes?: string[];
   shipment_width?: string;
   shipment_height?: string;
   shipment_length?: string;

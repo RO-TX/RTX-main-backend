@@ -1,5 +1,6 @@
 import { RepairRequest, AmcEnquiry } from '../../models';
 import { ApiError } from '../../lib/ApiError';
+import { notify } from '../notifications/notifications.service';
 
 /* ── Repair requests ── */
 
@@ -24,12 +25,19 @@ export interface RepairInput {
 
 export async function createRepairRequest(input: RepairInput) {
   // Booking fee ₹249 (in paise). Payment wiring (Razorpay) comes in the payments phase.
-  return RepairRequest.create({
+  const req = await RepairRequest.create({
     ...input,
     attachments: input.attachments ?? [],
     amount: 24900,
     paymentStatus: 'unpaid',
   });
+  await notify({
+    type: 'repair_request',
+    title: 'New repair request',
+    message: `${input.name} — ${input.city}`,
+    link: `/repair-requests`,
+  });
+  return req;
 }
 
 export async function listRepairRequests(params: {
@@ -77,7 +85,14 @@ export interface AmcInput {
 }
 
 export async function createAmcEnquiry(input: AmcInput) {
-  return AmcEnquiry.create(input);
+  const enquiry = await AmcEnquiry.create(input);
+  await notify({
+    type: 'amc_enquiry',
+    title: 'New AMC enquiry',
+    message: `${input.name} — ${input.mobile}`,
+    link: `/amc-enquiries`,
+  });
+  return enquiry;
 }
 
 export async function listAmcEnquiries(params: {

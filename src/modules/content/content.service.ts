@@ -4,7 +4,7 @@ import { ApiError } from '../../lib/ApiError';
 /* ── Reviews (homepage testimonials) ── */
 
 export async function listReviews() {
-  return Review.find().sort({ createdAt: -1 });
+  return Review.find().sort({ featured: -1, createdAt: -1 });
 }
 
 export async function createReview(input: {
@@ -12,8 +12,13 @@ export async function createReview(input: {
   name: string;
   position: string;
   description: string;
+  rating?: number;
+  location?: string;
+  featured?: boolean;
 }) {
-  return Review.create(input);
+  // Only the admin dashboard can create reviews today — there's no public
+  // submission flow yet, so every review created here is staff-curated.
+  return Review.create({ ...input, source: 'admin' });
 }
 
 export async function updateReview(id: string, patch: Record<string, unknown>) {

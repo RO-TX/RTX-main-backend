@@ -20,6 +20,9 @@ export interface IProduct extends Document {
   category: Types.ObjectId;
   isTopSeller: boolean;
   productType: ProductType;
+  /** Optional buyer-facing variants — most products (spares, cartridges) have neither. */
+  colors: string[];
+  sizes: string[];
   shipment_width: string;
   shipment_height: string;
   shipment_length: string;
@@ -56,6 +59,8 @@ const productSchema = new Schema<IProduct>(
       enum: ['homeproduct', 'customproduct', 'customplushome'],
       default: 'homeproduct',
     },
+    colors: { type: [String], default: [] },
+    sizes: { type: [String], default: [] },
     shipment_width: { type: String, default: '' },
     shipment_height: { type: String, default: '' },
     shipment_length: { type: String, default: '' },

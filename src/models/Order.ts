@@ -35,9 +35,18 @@ export interface IShippingAddress {
   mobile: string;
 }
 
+export interface IGuestCustomer {
+  name: string;
+  mobile: string;
+  email?: string;
+}
+
 export interface IOrder extends Document {
   _id: Types.ObjectId;
-  user: Types.ObjectId;
+  /** Absent for staff-entered walk-in/phone orders with no linked account — see guestCustomer. */
+  user?: Types.ObjectId;
+  guestCustomer?: IGuestCustomer;
+  createdByStaff?: Types.ObjectId;
   orderId: string;
   items: IOrderItem[];
   totalAmount: number;
@@ -114,7 +123,13 @@ const shippingAddressSchema = new Schema<IShippingAddress>(
 
 const orderSchema = new Schema<IOrder>(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    guestCustomer: {
+      name: String,
+      mobile: String,
+      email: String,
+    },
+    createdByStaff: { type: Schema.Types.ObjectId, ref: 'User' },
     orderId: { type: String, required: true, unique: true, index: true },
     items: { type: [orderItemSchema], default: [] },
     totalAmount: { type: Number, required: true },

@@ -9,6 +9,9 @@ export const createReviewSchema = z.object({
   name: z.string().min(1).trim(),
   position: z.string().min(1).trim(),
   description: z.string().min(1).trim(),
+  rating: z.number().int().min(1).max(5).default(5),
+  location: z.string().trim().default(''),
+  featured: z.boolean().default(false),
 });
 export const updateReviewSchema = createReviewSchema.partial();
 

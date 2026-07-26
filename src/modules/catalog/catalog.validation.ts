@@ -41,6 +41,8 @@ export const createProductSchema = z.object({
   category: objectId,
   isTopSeller: z.boolean().default(false),
   productType: productTypeEnum.default('homeproduct'),
+  colors: z.array(z.string().trim().min(1)).default([]),
+  sizes: z.array(z.string().trim().min(1)).default([]),
   shipment_width: z.string().default(''),
   shipment_height: z.string().default(''),
   shipment_length: z.string().default(''),

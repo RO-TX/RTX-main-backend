@@ -8,6 +8,7 @@ import {
   updateStatusSchema,
   placeOrderSchema,
   myOrdersQuery,
+  createManualOrderSchema,
 } from './orders.validation';
 
 const router = Router();
@@ -17,6 +18,13 @@ router.get('/mine', requireAuth, validate({ query: myOrdersQuery }), c.myOrders)
 router.post('/', requireAuth, validate({ body: placeOrderSchema }), c.place);
 
 // Admin routes
+router.post(
+  '/manual',
+  requireAuth,
+  requireStaff,
+  validate({ body: createManualOrderSchema }),
+  c.placeManual,
+);
 router.get('/', requireAuth, requireStaff, validate({ query: listOrdersQuery }), c.list);
 router.get('/:id', requireAuth, requireStaff, validate({ params: idParam }), c.getOne);
 router.patch(

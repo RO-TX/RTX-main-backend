@@ -28,6 +28,13 @@ export const place = asyncHandler(async (req: Request, res: Response) => {
   return created(res, order, 'Order placed');
 });
 
+/* ── Staff: manual/walk-in order ── */
+
+export const placeManual = asyncHandler(async (req: Request, res: Response) => {
+  const order = await orders.placeManualOrder(req.user!.id, req.body);
+  return created(res, order, 'Order created');
+});
+
 export const myOrders = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit } = req.query as unknown as { page: number; limit: number };
   const { items, pagination } = await orders.listMyOrders(req.user!.id, page, limit);

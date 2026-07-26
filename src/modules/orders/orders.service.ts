@@ -1,6 +1,7 @@
 import crypto from 'crypto';
-import { Order, Product, type OrderStatus, type IShippingAddress } from '../../models';
+import { Order, Product, type OrderStatus, type IShippingAddress, type IGuestCustomer } from '../../models';
 import { ApiError } from '../../lib/ApiError';
+import { notify } from '../notifications/notifications.service';
 
 /* ── Admin: list / get / update ── */
 
@@ -24,6 +25,7 @@ export async function listOrders(params: ListOrdersParams) {
       .skip((params.page - 1) * params.limit)
       .limit(params.limit)
       .populate('user', 'firstName lastName email')
+      .populate('createdByStaff', 'firstName lastName')
       .populate('items.product', 'name skuid images'),
     Order.countDocuments(filter),
   ]);
@@ -42,6 +44,7 @@ export async function listOrders(params: ListOrdersParams) {
 export async function getOrder(id: string) {
   const order = await Order.findById(id)
     .populate('user', 'firstName lastName email mobile')
+    .populate('createdByStaff', 'firstName lastName')
     .populate('items.product', 'name skuid images price');
   if (!order) throw ApiError.notFound('Order not found');
   return order;
@@ -85,24 +88,45 @@ export interface PlaceOrderInput {
   notes?: string;
 }
 
+export interface ManualOrderInput {
+  items: Array<{ product: string; quantity: number }>;
+  guestCustomer: IGuestCustomer;
+  shippingAddress: IShippingAddress;
+  paymentMethod: 'cod' | 'razorpay' | 'bank_transfer' | 'upi' | 'card' | 'wallet';
+  status: OrderStatus;
+  notes?: string;
+}
+
 function genOrderId(): string {
   return `RTX_${Date.now()}_${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 }
 
+interface CreateOrderParams {
+  items: Array<{ product: string; quantity: number }>;
+  shippingAddress: IShippingAddress;
+  paymentMethod: string;
+  status: OrderStatus;
+  notes?: string;
+  user?: string;
+  guestCustomer?: IGuestCustomer;
+  createdByStaff?: string;
+}
+
 /**
- * Places a COD/pending order and DECREMENTS stock atomically per item — the old
- * site never decremented stock, allowing oversells. Each decrement is guarded by
+ * Creates an order and DECREMENTS stock atomically per item — the old site never
+ * decremented stock, allowing oversells. Each decrement is guarded by
  * `quantity >= requested` so two concurrent orders can't drive stock negative.
+ * Shared by both customer checkout and staff-entered manual orders.
  */
-export async function placeOrder(userId: string, input: PlaceOrderInput) {
-  if (!input.items.length) throw ApiError.badRequest('Order has no items');
+async function createOrder(params: CreateOrderParams) {
+  if (!params.items.length) throw ApiError.badRequest('Order has no items');
 
   // Load products + validate availability up front.
-  const productIds = input.items.map((i) => i.product);
+  const productIds = params.items.map((i) => i.product);
   const products = await Product.find({ _id: { $in: productIds }, isActive: true });
   const byId = new Map(products.map((p) => [p._id.toString(), p]));
 
-  const lineItems = input.items.map((i) => {
+  const lineItems = params.items.map((i) => {
     const p = byId.get(i.product);
     if (!p) throw ApiError.badRequest(`Product ${i.product} not found or inactive`);
     if (i.quantity < 1) throw ApiError.badRequest('Quantity must be at least 1');
@@ -129,16 +153,27 @@ export async function placeOrder(userId: string, input: PlaceOrderInput) {
     }
 
     const order = await Order.create({
-      user: userId,
+      user: params.user,
+      guestCustomer: params.guestCustomer,
+      createdByStaff: params.createdByStaff,
       orderId: genOrderId(),
       items: lineItems,
       totalAmount,
-      status: 'orderplaced',
-      shippingAddress: input.shippingAddress,
-      paymentMethod: input.paymentMethod,
+      status: params.status,
+      shippingAddress: params.shippingAddress,
+      paymentMethod: params.paymentMethod,
       paymentStatus: 'pending',
-      notes: input.notes,
+      notes: params.notes,
     });
+
+    const customerLabel = params.guestCustomer?.name ?? 'a customer';
+    await notify({
+      type: 'order',
+      title: 'New order placed',
+      message: `${order.orderId} — ₹${totalAmount.toLocaleString('en-IN')} from ${customerLabel}`,
+      link: `/orders/${order._id}`,
+    });
+
     return order;
   } catch (err) {
     // Compensating rollback of any stock already decremented.
@@ -149,6 +184,30 @@ export async function placeOrder(userId: string, input: PlaceOrderInput) {
     );
     throw err;
   }
+}
+
+export async function placeOrder(userId: string, input: PlaceOrderInput) {
+  return createOrder({
+    items: input.items,
+    shippingAddress: input.shippingAddress,
+    paymentMethod: input.paymentMethod,
+    status: 'orderplaced',
+    notes: input.notes,
+    user: userId,
+  });
+}
+
+/** Staff-entered walk-in/phone order — no linked customer account required. */
+export async function placeManualOrder(staffId: string, input: ManualOrderInput) {
+  return createOrder({
+    items: input.items,
+    shippingAddress: input.shippingAddress,
+    paymentMethod: input.paymentMethod,
+    status: input.status,
+    notes: input.notes,
+    guestCustomer: input.guestCustomer,
+    createdByStaff: staffId,
+  });
 }
 
 async function restock(items: Array<{ product: unknown; quantity?: number }>) {

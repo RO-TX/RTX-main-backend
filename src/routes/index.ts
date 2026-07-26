@@ -7,6 +7,7 @@ import contentRoutes from '../modules/content/content.routes';
 import supportRoutes from '../modules/support/support.routes';
 import analyticsRoutes from '../modules/analytics/analytics.routes';
 import uploadsRoutes from '../modules/uploads/uploads.routes';
+import notificationsRoutes from '../modules/notifications/notifications.routes';
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.use('/content', contentRoutes); // reviews + certifications
 router.use('/support', supportRoutes); // repair + AMC
 router.use('/analytics', analyticsRoutes);
 router.use('/uploads', uploadsRoutes); // S3-backed image uploads
+router.use('/notifications', notificationsRoutes);
 
 /*
  * Still to build (need external API keys / customer flows):

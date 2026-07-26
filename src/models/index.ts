@@ -7,6 +7,7 @@ export {
   type OrderStatus,
   type IShippingAddress,
   type IOrderItem,
+  type IGuestCustomer,
 } from './Order';
 export { Payment, type IPayment, type PaymentStatus } from './Payment';
 export { RepairRequest, type IRepairRequest } from './RepairRequest';
@@ -20,3 +21,4 @@ export { ResetToken, type IResetToken } from './ResetToken';
 export { Counter, nextSequence } from './Counter';
 export { RefreshToken, type IRefreshToken } from './RefreshToken';
 export { LoginLog, type ILoginLog } from './LoginLog';
+export { Notification, type INotification, type NotificationType } from './Notification';

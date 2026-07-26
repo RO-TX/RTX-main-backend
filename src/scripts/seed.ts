@@ -2,8 +2,11 @@
  * Seed script — creates an admin user + sample catalog/orders/content so the
  * dashboard has real data to display and test against.
  *
- * Run:  npm run seed
+ * Run:  npm run seed -- --yes
  * Idempotent-ish: it wipes the sample collections first (NOT users) and reseeds.
+ *
+ * DESTRUCTIVE + it injects placeholder content, so it requires `--yes`. Never
+ * run it against the live database — `npm run reset-data` is the inverse.
  */
 import { connectDB, disconnectDB } from '../config/db';
 import {
@@ -23,6 +26,14 @@ const ADMIN_EMAIL = 'admin@rotechnicalxperts.com';
 const ADMIN_PASSWORD = 'Admin@123';
 
 async function seed(): Promise<void> {
+  if (!process.argv.includes('--yes')) {
+    logger.error(
+      'Refusing to seed: this wipes the sample collections and injects placeholder ' +
+        'data. Re-run with `npm run seed -- --yes` if that is really what you want.',
+    );
+    process.exit(1);
+  }
+
   await connectDB();
   logger.info('Seeding database...');
 

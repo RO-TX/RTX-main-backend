@@ -50,10 +50,18 @@ const userSchema = new Schema<IUser>(
   { timestamps: true },
 );
 
-/** Strip sensitive fields from any JSON serialisation of a user. */
+/**
+ * Strip sensitive fields from any JSON serialisation of a user, and expose
+ * `id` (string) alongside `_id` — the auth endpoints (/auth/me, /auth/login)
+ * have always hand-built their response with `id`, but the users list/get
+ * endpoints just returned the raw doc (`_id` only). The frontend `User` type
+ * assumes `.id` everywhere, so plain `_id`-only responses silently broke
+ * React keys and any `/users/:id` call built from a list row.
+ */
 userSchema.set('toJSON', {
   transform(_doc, ret) {
     const obj = ret as unknown as Record<string, unknown>;
+    obj.id = String(obj._id);
     delete obj.password;
     delete obj.__v;
     return obj;

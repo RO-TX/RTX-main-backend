@@ -52,6 +52,37 @@ export const placeOrderSchema = z.object({
   notes: z.string().max(1000).optional(),
 });
 
+export const createManualOrderSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        product: objectId,
+        quantity: z.number().int().min(1),
+      }),
+    )
+    .min(1, 'Order must contain at least one item'),
+  guestCustomer: z.object({
+    name: z.string().min(1).trim(),
+    mobile: z.string().regex(/^\d{10}$/, 'Mobile must be 10 digits'),
+    email: z.string().email().trim().optional(),
+  }),
+  shippingAddress: z.object({
+    address: z.string().min(1),
+    state: z.string().min(1),
+    city: z.string().min(1),
+    postalCode: z.string().min(1),
+    country: z.string().min(1).default('India'),
+    mobile: z.string().regex(/^\d{10}$/, 'Mobile must be 10 digits'),
+  }),
+  paymentMethod: z
+    .enum(['cod', 'razorpay', 'bank_transfer', 'upi', 'card', 'wallet'])
+    .default('cod'),
+  status: z
+    .enum(['pending', 'confirmed', 'processing', 'shipped', 'delivered'])
+    .default('confirmed'),
+  notes: z.string().max(1000).optional(),
+});
+
 export const myOrdersQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(10),

@@ -71,7 +71,13 @@ export const env = parsed.data;
 export const isProd = env.NODE_ENV === 'production';
 export const isDev = env.NODE_ENV === 'development';
 
-/** Allowed CORS origins as an array. */
+/**
+ * Allowed CORS origins as an array.
+ *
+ * Trailing slashes are stripped: it's natural to paste "https://site.com/" into
+ * a host's env var, but the browser's `Origin` header never carries one, so the
+ * allowlist entry would silently never match and every request would fail CORS.
+ */
 export const corsOrigins = env.CORS_ORIGINS.split(',')
-  .map((o) => o.trim())
+  .map((o) => o.trim().replace(/\/+$/, ''))
   .filter(Boolean);
