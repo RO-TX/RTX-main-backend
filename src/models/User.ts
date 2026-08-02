@@ -7,6 +7,18 @@ import { Schema, model, models, type Document, type Model, type Types } from 'mo
  */
 export type UserRole = 'customer' | 'call_center' | 'microadmin' | 'admin';
 
+export interface IAddress {
+  _id: Types.ObjectId;
+  label?: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  mobile: string;
+  isDefault: boolean;
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
   firstName: string;
@@ -18,9 +30,24 @@ export interface IUser extends Document {
   role: UserRole;
   googleId?: string;
   emailVerified: boolean;
+  addresses: Types.DocumentArray<IAddress>;
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Same field names as Order.shippingAddress, plus label/isDefault — this is a
+// list of independently addressable entries (default _id:true), unlike the
+// order's single embedded snapshot (_id:false).
+const addressSchema = new Schema<IAddress>({
+  label: { type: String, trim: true },
+  address: { type: String, required: true, trim: true },
+  city: { type: String, required: true, trim: true },
+  state: { type: String, required: true, trim: true },
+  postalCode: { type: String, required: true, trim: true },
+  country: { type: String, required: true, trim: true, default: 'India' },
+  mobile: { type: String, required: true, trim: true },
+  isDefault: { type: Boolean, default: false },
+});
 
 const userSchema = new Schema<IUser>(
   {
@@ -46,6 +73,7 @@ const userSchema = new Schema<IUser>(
     // New vs old site: track OAuth linkage + verification explicitly
     googleId: { type: String, sparse: true },
     emailVerified: { type: Boolean, default: false },
+    addresses: { type: [addressSchema], default: [] },
   },
   { timestamps: true },
 );

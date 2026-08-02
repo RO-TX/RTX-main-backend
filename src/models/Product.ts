@@ -2,11 +2,17 @@ import { Schema, model, models, type Document, type Model, type Types } from 'mo
 
 export type ProductType = 'homeproduct' | 'customproduct' | 'customplushome';
 
+export interface IProductSpec {
+  icon: string;
+  label: [string, string];
+}
+
 export interface IProduct extends Document {
   _id: Types.ObjectId;
   skuid: string;
   slug: string;
   name: string;
+  subtitle: string;
   images: string[];
   description: string;
   flipkartLink: string;
@@ -23,6 +29,8 @@ export interface IProduct extends Document {
   /** Optional buyer-facing variants — most products (spares, cartridges) have neither. */
   colors: string[];
   sizes: string[];
+  /** Short icon+two-line callouts shown on the PDP spec strip (e.g. {icon:'tds', label:['18 ppm','Tested output']}). */
+  specs: IProductSpec[];
   shipment_width: string;
   shipment_height: string;
   shipment_length: string;
@@ -38,11 +46,24 @@ export interface IProduct extends Document {
   updatedAt: Date;
 }
 
+const productSpecSchema = new Schema<IProductSpec>(
+  {
+    icon: { type: String, required: true, trim: true },
+    label: {
+      type: [String],
+      required: true,
+      validate: { validator: (v: string[]) => v.length === 2, message: 'label needs exactly 2 lines' },
+    },
+  },
+  { _id: false },
+);
+
 const productSchema = new Schema<IProduct>(
   {
     skuid: { type: String, required: true, unique: true, trim: true },
     slug: { type: String, required: true, unique: true, trim: true, index: true },
     name: { type: String, required: true, trim: true, index: 'text' },
+    subtitle: { type: String, default: '', trim: true, maxlength: 80 },
     images: { type: [String], default: [] },
     description: { type: String, default: '' },
     flipkartLink: { type: String, default: '' },
@@ -61,6 +82,7 @@ const productSchema = new Schema<IProduct>(
     },
     colors: { type: [String], default: [] },
     sizes: { type: [String], default: [] },
+    specs: { type: [productSpecSchema], default: [] },
     shipment_width: { type: String, default: '' },
     shipment_height: { type: String, default: '' },
     shipment_length: { type: String, default: '' },

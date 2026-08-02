@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import * as orders from './orders.service';
 import { asyncHandler } from '../../lib/asyncHandler';
 import { ok, created, paginated } from '../../lib/apiResponse';
+import { ApiError } from '../../lib/ApiError';
 
 /* ── Admin ── */
 
@@ -13,6 +14,12 @@ export const list = asyncHandler(async (req: Request, res: Response) => {
 
 export const getOne = asyncHandler(async (req: Request, res: Response) => {
   const order = await orders.getOrder(req.params.id);
+  if (req.user!.role === 'customer') {
+    const ownerId = (order.user as { _id?: { toString(): string } } | undefined)?._id
+      ? String((order.user as { _id: { toString(): string } })._id)
+      : String(order.user);
+    if (ownerId !== req.user!.id) throw ApiError.forbidden('Not your order');
+  }
   return ok(res, order);
 });
 

@@ -8,6 +8,8 @@ import supportRoutes from '../modules/support/support.routes';
 import analyticsRoutes from '../modules/analytics/analytics.routes';
 import uploadsRoutes from '../modules/uploads/uploads.routes';
 import notificationsRoutes from '../modules/notifications/notifications.routes';
+import cartRoutes from '../modules/cart/cart.routes';
+import addressesRoutes from '../modules/addresses/addresses.routes';
 
 const router = Router();
 
@@ -24,10 +26,11 @@ router.use('/support', supportRoutes); // repair + AMC
 router.use('/analytics', analyticsRoutes);
 router.use('/uploads', uploadsRoutes); // S3-backed image uploads
 router.use('/notifications', notificationsRoutes);
+router.use('/cart', cartRoutes); // guest-session or logged-in, see cart.controller
+router.use('/addresses', addressesRoutes);
 
 /*
  * Still to build (need external API keys / customer flows):
- *   router.use('/cart', cartRoutes);
  *   router.use('/payments', paymentsRoutes);      // Razorpay
  *   router.use('/shipping', shippingRoutes);      // Delhivery
  *   router.use('/warehouses', warehouseRoutes);

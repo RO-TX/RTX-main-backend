@@ -1,5 +1,5 @@
-export { User, type IUser, type UserRole } from './User';
-export { Product, type IProduct, type ProductType } from './Product';
+export { User, type IUser, type IAddress, type UserRole } from './User';
+export { Product, type IProduct, type IProductSpec, type ProductType } from './Product';
 export { Category, type ICategory, type CategoryType } from './Category';
 export {
   Order,

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Product, Category, type ProductType } from '../../models';
+import { Product, Category, type ProductType, type IProductSpec } from '../../models';
 import { ApiError } from '../../lib/ApiError';
 
 export interface ListProductsParams {
@@ -76,6 +76,7 @@ export interface CreateProductInput {
   skuid: string;
   slug: string;
   name: string;
+  subtitle?: string;
   images: string[];
   description?: string;
   flipkartLink?: string;
@@ -90,6 +91,7 @@ export interface CreateProductInput {
   productType?: ProductType;
   colors?: string[];
   sizes?: string[];
+  specs?: IProductSpec[];
   shipment_width?: string;
   shipment_height?: string;
   shipment_length?: string;

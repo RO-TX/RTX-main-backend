@@ -103,14 +103,109 @@ async function seed(): Promise<void> {
 
   // ── Products ──
   const productSpecs = [
-    { cat: domestic, name: 'AquaPure 8L RO+UV', price: 12999, qty: 25, top: true },
-    { cat: domestic, name: 'AquaPure 10L RO+UV+UF', price: 15999, qty: 18, top: true },
-    { cat: domestic, name: 'AquaMini 6L Compact RO', price: 8999, qty: 40, top: false },
-    { cat: commercial, name: 'HydroMax 50 LPH RO Plant', price: 84999, qty: 5, top: true },
-    { cat: commercial, name: 'HydroMax 100 LPH RO Plant', price: 149999, qty: 3, top: false },
-    { cat: spares, name: 'Sediment Filter Cartridge', price: 349, qty: 200, top: false },
-    { cat: spares, name: 'RO Membrane 80 GPD', price: 1899, qty: 4, top: false }, // low stock
-    { cat: spares, name: 'Carbon Filter Set', price: 799, qty: 120, top: false },
+    {
+      cat: domestic,
+      name: 'AquaPure 8L RO+UV',
+      price: 12999,
+      qty: 25,
+      top: true,
+      subtitle: '7-stage purification with UV shield',
+      specs: [
+        { icon: 'shield', label: ['7 Stage', 'Purification'] },
+        { icon: 'tds', label: ['TDS', 'Control'] },
+        { icon: 'droplet', label: ['8L', 'Storage'] },
+        { icon: 'smart', label: ['Smart', 'Indicator'] },
+      ],
+    },
+    {
+      cat: domestic,
+      name: 'AquaPure 10L RO+UV+UF',
+      price: 15999,
+      qty: 18,
+      top: true,
+      subtitle: 'RO+UV+UF with smart auto-shutoff',
+      specs: [
+        { icon: 'shield', label: ['8 Stage', 'Purification'] },
+        { icon: 'droplet', label: ['10L', 'Storage'] },
+        { icon: 'smart', label: ['Auto', 'Shutoff'] },
+        { icon: 'warranty', label: ['1 Year', 'Warranty'] },
+      ],
+    },
+    {
+      cat: domestic,
+      name: 'AquaMini 6L Compact RO',
+      price: 8999,
+      qty: 40,
+      top: false,
+      subtitle: 'Compact 6L RO built for small kitchens',
+      specs: [
+        { icon: 'droplet', label: ['6L', 'Storage'] },
+        { icon: 'shield', label: ['5 Stage', 'Purification'] },
+        { icon: 'install', label: ['Wall', 'Mount'] },
+      ],
+    },
+    {
+      cat: commercial,
+      name: 'HydroMax 50 LPH RO Plant',
+      price: 84999,
+      qty: 5,
+      top: true,
+      subtitle: 'Commercial-grade 50 LPH output',
+      specs: [
+        { icon: 'flow', label: ['50 LPH', 'Output'] },
+        { icon: 'filter', label: ['Heavy', 'Duty'] },
+        { icon: 'warranty', label: ['2 Year', 'Warranty'] },
+      ],
+    },
+    {
+      cat: commercial,
+      name: 'HydroMax 100 LPH RO Plant',
+      price: 149999,
+      qty: 3,
+      top: false,
+      subtitle: 'High-capacity 100 LPH commercial plant',
+      specs: [
+        { icon: 'flow', label: ['100 LPH', 'Output'] },
+        { icon: 'filter', label: ['Industrial', 'Grade'] },
+        { icon: 'install', label: ['On-site', 'Install'] },
+      ],
+    },
+    {
+      cat: spares,
+      name: 'Sediment Filter Cartridge',
+      price: 349,
+      qty: 200,
+      top: false,
+      subtitle: 'First-stage sediment pre-filter',
+      specs: [
+        { icon: 'filter', label: ['5 Micron', 'Rating'] },
+        { icon: 'warranty', label: ['3 Month', 'Life'] },
+      ],
+    },
+    {
+      cat: spares,
+      name: 'RO Membrane 80 GPD',
+      price: 1899,
+      qty: 4,
+      top: false,
+      subtitle: '80 GPD thin-film composite membrane',
+      specs: [
+        { icon: 'flow', label: ['80 GPD', 'Output'] },
+        { icon: 'filter', label: ['0.0001µ', 'Pore Size'] },
+      ],
+    }, // low stock
+    {
+      cat: spares,
+      name: 'Carbon Filter Set',
+      price: 799,
+      qty: 120,
+      top: false,
+      subtitle: 'Activated carbon pre/post filter set',
+      specs: [
+        { icon: 'filter', label: ['Activated', 'Carbon'] },
+        { icon: 'warranty', label: ['6 Month', 'Life'] },
+      ],
+    },
   ];
 
   const products = [];
@@ -121,6 +216,8 @@ async function seed(): Promise<void> {
       skuid: `RTX-${String(i + 1).padStart(4, '0')}`,
       slug,
       name: s.name,
+      subtitle: s.subtitle,
+      specs: s.specs,
       images: [`https://placehold.co/600x600/EEF3F7/062F4F?text=${encodeURIComponent(s.name)}`],
       description: `${s.name} — reliable RO water purification from RO Technical Xperts.`,
       mrp: Math.round((s.price * 1.22) / 10) * 10, // ~18% off

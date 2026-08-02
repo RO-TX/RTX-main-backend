@@ -13,7 +13,7 @@ export interface ICartItem {
 
 export interface ICartActivity extends Document {
   _id: Types.ObjectId;
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId;
   items: ICartItem[];
   totalQuantity: number;
   totalValue: number;
@@ -39,7 +39,9 @@ const cartItemSchema = new Schema<ICartItem>(
 
 const cartActivitySchema = new Schema<ICartActivity>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    // Optional: a cart is keyed by userId once logged in, or by sessionId for a
+    // guest — there's no login flow yet, so sessionId is the primary key today.
+    userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     items: { type: [cartItemSchema], default: [] },
     totalQuantity: { type: Number, required: true, default: 0 },
     totalValue: { type: Number, required: true, default: 0 },

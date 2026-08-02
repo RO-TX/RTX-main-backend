@@ -26,7 +26,8 @@ router.post(
   c.placeManual,
 );
 router.get('/', requireAuth, requireStaff, validate({ query: listOrdersQuery }), c.list);
-router.get('/:id', requireAuth, requireStaff, validate({ params: idParam }), c.getOne);
+// requireAuth only — a customer may fetch their own order; ownership is checked in the controller.
+router.get('/:id', requireAuth, validate({ params: idParam }), c.getOne);
 router.patch(
   '/:id/status',
   requireAuth,

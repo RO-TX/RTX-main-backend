@@ -29,6 +29,7 @@ export const createProductSchema = z.object({
     .trim()
     .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with dashes'),
   name: z.string().min(1).trim(),
+  subtitle: z.string().trim().max(80).default(''),
   images: z.array(z.string().url()).min(1, 'At least one image is required'),
   description: z.string().default(''),
   flipkartLink: z.string().url().or(z.literal('')).default(''),
@@ -43,6 +44,9 @@ export const createProductSchema = z.object({
   productType: productTypeEnum.default('homeproduct'),
   colors: z.array(z.string().trim().min(1)).default([]),
   sizes: z.array(z.string().trim().min(1)).default([]),
+  specs: z
+    .array(z.object({ icon: z.string().trim().min(1), label: z.tuple([z.string(), z.string()]) }))
+    .default([]),
   shipment_width: z.string().default(''),
   shipment_height: z.string().default(''),
   shipment_length: z.string().default(''),
