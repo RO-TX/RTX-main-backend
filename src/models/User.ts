@@ -70,8 +70,10 @@ const userSchema = new Schema<IUser>(
       default: 'customer',
       index: true,
     },
-    // New vs old site: track OAuth linkage + verification explicitly
-    googleId: { type: String, sparse: true },
+    // New vs old site: track OAuth linkage + verification explicitly.
+    // unique+sparse: two different people can never end up sharing one Google
+    // account's uid, while any number of password-only users keep no value at all.
+    googleId: { type: String, unique: true, sparse: true },
     emailVerified: { type: Boolean, default: false },
     addresses: { type: [addressSchema], default: [] },
   },
