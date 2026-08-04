@@ -66,3 +66,15 @@ export const listLoginLogsQuery = z.object({
 });
 
 export type SignupBody = z.infer<typeof signupSchema>;
+
+/**
+ * A Firebase ID token is a JWT — three dot-separated base64url segments and
+ * always far longer than 100 characters. Shape is checked here so obvious
+ * junk never reaches the Firebase Admin call.
+ */
+export const googleLoginSchema = z.object({
+  idToken: z
+    .string()
+    .min(100, 'Invalid Google token')
+    .regex(/^[\w-]+\.[\w-]+\.[\w-]+$/, 'Invalid Google token'),
+});

@@ -54,6 +54,12 @@ const envSchema = z.object({
   // documented signature scheme, so this is the endpoint's only gate.
   DELHIVERY_WEBHOOK_SECRET: z.string().optional(),
 
+  // Firebase — only /auth/google needs these. The project id alone is enough
+  // to verify ID tokens (the signing certificates are public); a full service
+  // account is accepted too, inline as JSON.
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  FIREBASE_SERVICE_ACCOUNT: z.string().optional(),
+
   GROQ_API_KEY: z.string().optional(),
 
   // AWS S3 (file/image storage) — future use. All optional for now.

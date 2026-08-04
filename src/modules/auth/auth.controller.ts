@@ -35,6 +35,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   return ok(res, { user, accessToken: tokens.accessToken }, { message: 'Logged in' });
 });
 
+/** POST /auth/google — exchange a Firebase ID token for an RTX session. */
+export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
+  const { user, tokens } = await authService.loginWithGoogle(req.body.idToken, meta(req));
+  setRefreshCookie(res, tokens.refreshToken);
+  return ok(res, { user, accessToken: tokens.accessToken }, { message: 'Logged in with Google' });
+});
+
 /** POST /auth/refresh — rotate tokens. */
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
   const raw = readRefreshCookie(req);

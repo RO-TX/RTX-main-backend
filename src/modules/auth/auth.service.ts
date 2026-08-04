@@ -11,6 +11,7 @@ import {
 } from '../../lib/jwt';
 import { sendMail, otpEmail, resetEmail } from '../../lib/mailer';
 import { ApiError } from '../../lib/ApiError';
+import { verifyGoogleIdToken } from '../../lib/firebase';
 import { env } from '../../config/env';
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
@@ -174,6 +175,71 @@ export async function login(
   await LoginLog.create({
     user: user._id,
     email,
+    success: true,
+    ip: meta.ip,
+    userAgent: meta.userAgent,
+  });
+
+  const tokens = await issueTokens(user, meta);
+  return { user: sanitize(user), tokens };
+}
+
+/* ─────────────── Google (Firebase) ─────────────── */
+
+/**
+ * Sign in with a Firebase ID token from the browser's Google popup.
+ *
+ * Three cases, in this order:
+ *   1. We have seen this Google account before  → log it in.
+ *   2. The email matches a password account     → link it, then log in.
+ *   3. Neither                                  → create the account.
+ *
+ * Case 2 is safe only because the token proves Google verified the address:
+ * an attacker cannot claim someone else's email without holding the mailbox.
+ * It is also the case that matters most — someone who signed up with a
+ * password and later taps "Continue with Google" expects their orders to
+ * still be there, not a second empty account on the same address.
+ *
+ * No password is ever set. `User.password` is "" for these accounts, and
+ * `login()` compares against that hash and fails, so the Google-only route
+ * stays the only way in until they use forgot-password to set one.
+ */
+export async function loginWithGoogle(
+  idToken: string,
+  meta: RequestMeta,
+): Promise<{ user: ReturnType<typeof sanitize>; tokens: IssuedTokens }> {
+  const identity = await verifyGoogleIdToken(idToken);
+
+  let user = await User.findOne({ googleId: identity.uid });
+
+  if (!user) {
+    user = await User.findOne({ email: identity.email });
+
+    if (user) {
+      user.googleId = identity.uid;
+      user.emailVerified = true;
+      // Only fill a blank avatar — never overwrite one they chose here.
+      if (identity.picture && user.image === '/images/avatar.png') {
+        user.image = identity.picture;
+      }
+      await user.save();
+    } else {
+      user = await User.create({
+        firstName: identity.firstName,
+        lastName: identity.lastName,
+        email: identity.email,
+        googleId: identity.uid,
+        password: '', // OAuth-only account
+        image: identity.picture || undefined,
+        role: 'customer', // forced, exactly as in signup
+        emailVerified: true,
+      });
+    }
+  }
+
+  await LoginLog.create({
+    user: user._id,
+    email: user.email,
     success: true,
     ip: meta.ip,
     userAgent: meta.userAgent,

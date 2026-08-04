@@ -7,6 +7,7 @@ import {
   requestOtpSchema,
   signupSchema,
   loginSchema,
+  googleLoginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   updatePasswordSchema,
@@ -21,6 +22,7 @@ const router = Router();
 router.post('/request-otp', authLimiter, validate({ body: requestOtpSchema }), c.requestOtp);
 router.post('/signup', authLimiter, validate({ body: signupSchema }), c.signup);
 router.post('/login', authLimiter, validate({ body: loginSchema }), c.login);
+router.post('/google', authLimiter, validate({ body: googleLoginSchema }), c.googleLogin);
 router.post('/refresh', c.refresh);
 router.post('/logout', c.logout);
 router.post(
