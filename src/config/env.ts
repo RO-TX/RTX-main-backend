@@ -43,6 +43,16 @@ const envSchema = z.object({
     .string()
     .default('true')
     .transform((v) => v === 'true'),
+  // Pickup location name + client name exactly as registered in the Delhivery
+  // dashboard — the manifest API rejects anything that doesn't match verbatim.
+  DELHIVERY_PICKUP_LOCATION: z.string().optional(),
+  DELHIVERY_CLIENT_NAME: z.string().optional(),
+  DELHIVERY_SELLER_GST_TIN: z.string().optional(),
+  DELHIVERY_HSN_CODE: z.string().optional(),
+  DELHIVERY_DEFAULT_WEIGHT_GRAMS: z.string().default('3000'),
+  // Forms part of the webhook URL path — Delhivery's push API has no
+  // documented signature scheme, so this is the endpoint's only gate.
+  DELHIVERY_WEBHOOK_SECRET: z.string().optional(),
 
   GROQ_API_KEY: z.string().optional(),
 

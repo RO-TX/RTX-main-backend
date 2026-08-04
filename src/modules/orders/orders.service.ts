@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import { Order, Product, type OrderStatus, type IShippingAddress, type IGuestCustomer } from '../../models';
 import { ApiError } from '../../lib/ApiError';
 import { notify } from '../notifications/notifications.service';
+import { logger } from '../../lib/logger';
+import * as shipping from '../shipping/shipping.service';
 
 /* ── Admin: list / get / update ── */
 
@@ -76,6 +78,23 @@ export async function updateOrderStatus(id: string, status: OrderStatus, adminNo
     await restock(order.items);
   }
   await order.save();
+
+  // Auto-create the Delhivery shipment the moment an order is confirmed. A
+  // failure here (bad pincode, Delhivery API hiccup) must never block the
+  // status update itself — staff still see the order as confirmed and can
+  // retry shipment creation manually from the dashboard.
+  if (status === 'confirmed' && !order.shipping?.waybill) {
+    try {
+      const shipped = await shipping.createShipmentForOrder(String(order._id));
+      // `shipped` is a separately-fetched copy that now holds the waybill —
+      // reflect it onto the doc we're about to return so the caller doesn't
+      // see a stale response despite the DB write having succeeded.
+      order.shipping = shipped.shipping;
+    } catch (err) {
+      logger.warn(`[orders] auto shipment creation failed for order ${order.orderId}`, err);
+    }
+  }
+
   return order;
 }
 

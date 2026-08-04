@@ -10,6 +10,7 @@ import uploadsRoutes from '../modules/uploads/uploads.routes';
 import notificationsRoutes from '../modules/notifications/notifications.routes';
 import cartRoutes from '../modules/cart/cart.routes';
 import addressesRoutes from '../modules/addresses/addresses.routes';
+import shippingRoutes from '../modules/shipping/shipping.routes';
 
 const router = Router();
 
@@ -28,12 +29,11 @@ router.use('/uploads', uploadsRoutes); // S3-backed image uploads
 router.use('/notifications', notificationsRoutes);
 router.use('/cart', cartRoutes); // guest-session or logged-in, see cart.controller
 router.use('/addresses', addressesRoutes);
+router.use('/shipping', shippingRoutes); // Delhivery — see shipping.controller for the webhook
 
 /*
- * Still to build (need external API keys / customer flows):
+ * Still to build (needs a Razorpay account):
  *   router.use('/payments', paymentsRoutes);      // Razorpay
- *   router.use('/shipping', shippingRoutes);      // Delhivery
- *   router.use('/warehouses', warehouseRoutes);
  */
 
 export default router;
